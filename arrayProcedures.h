@@ -15,3 +15,11 @@ bool isIn(long double* arr, unsigned short size, long double value);
 
 bool isIn(char* arr, unsigned short size, char value);
 bool isIn(unsigned char* arr, unsigned short size, unsigned char value);
+
+// Trim - to trim whitespace at end of C-style string
+
+char* Trim(char* line, char symbol = ' ');
+
+// sizeOfCString - to get size of C-style string
+
+short sizeOfCString(char* line);

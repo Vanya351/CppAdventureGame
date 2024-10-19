@@ -90,3 +90,29 @@ bool isIn(unsigned char* arr, unsigned short size, unsigned char value) {
     }
     return false;
 }
+
+
+char* Trim(char* line, char symbol) {
+    short i = 0, pos = 0;
+    while (line[i] != '\0') {
+        if (line[i] != symbol) {
+            pos = i + 1;
+        }
+        i++;
+    }
+
+    char *newLine = new char[pos + 1];
+    for (i = 0; i < pos; i++) {
+        newLine[i] = line[i];
+    }
+
+    return newLine;
+}
+
+short sizeOfCString(char* line) {
+    short i = 0;
+    while (line[i] != '\0') {
+        i++;
+    }
+    return i;
+}
