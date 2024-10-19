@@ -11,18 +11,8 @@ using namespace OpenXLSX;
 CONSOLE_SCREEN_BUFFER_INFOEX ConsoleInfo;
 HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
-/*
-    XLDocument doc;
-    doc.open("map.xlsx");
-    auto wks = doc.workbook().worksheet("Paradarium");
-
-    cout << wks.cell("BW7").value();
-
-    doc.save();
-
-    return 0;
-*/
-
+char** LocationInfo = new char*[0];
+short LocationInfoSize = 0;
 
 void ChangeColorSet(short number) {
     const COLORREF set1[16] = {
@@ -96,8 +86,59 @@ void printColorizedText(char* line, unsigned short size, char colorDeterminant =
     }
 }
 
+char** LoadLocationInfo(char location[], char world[]) {
+    short i;
+    for (i = 0; i < LocationInfoSize; i++) {
+        delete[] LocationInfo[i];
+    }
+    delete[] LocationInfo;
+
+    XLDocument doc;
+    doc.open("map.xlsx");
+    auto wks = doc.workbook().worksheet(world);
+
+    string line = wks.cell(location).getString();
+
+    short counter = 0;
+    i = 0;
+    while (line[i] != '\0') {
+        if (line[i] == ';') {
+            counter++;
+        }
+        i++;
+    }
+
+    char** li = new char*[counter];
+    LocationInfoSize = counter;
+
+    short pos = 0, opos = 0;
+    for (i = 0; i < counter; i++) {
+        while (line[pos] != ';') {
+            pos++;
+        }
+
+        pos++;
+        li[i] = new char[pos - opos];
+
+        for (short j = 0; j < pos - opos; j++) {
+            if (j != pos - opos - 1) {
+                li[i][j] = line[opos + j];
+            } else {
+                li[i][j] = '\0';
+            }
+        }
+
+        opos = pos;
+    }
+
+    doc.close();
+    return li;
+}
+
 
 int main() {
+    SetConsoleOutputCP(CP_UTF8);
+
     HWND hwConsole = GetConsoleWindow();
     ShowWindow(hwConsole, SW_HIDE);
 
@@ -108,11 +149,7 @@ int main() {
 
     ChangeColorSet(1);
 
-
-
-    cout << 'a';
-    int a;
-    cin >> a;
+    LocationInfo = LoadLocationInfo({"CK26"}, {"Paradarium"});
 
 
     while (1) {
