@@ -129,3 +129,19 @@ unsigned short sizeOfCString(char* line) {
     }
     return i;
 }
+
+bool isSameStrings(char* line1, char* line2) {
+    unsigned short size1, size2;
+    size1 = sizeOfCString(line1);
+    size2 = sizeOfCString(line2);
+    bool cond = true;
+    if (size1 == size2) {
+        for (short i = 0; i < size1; i++) {
+            cond = cond && (line1[i] == line2[i]);
+            if (!cond) break;
+        }
+    } else {
+        cond = false;
+    }
+    return cond
+}

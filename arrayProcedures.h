@@ -1,5 +1,4 @@
 // isIn - check if there is a value in the array
-
 bool isIn(short* arr, unsigned short size, short value);
 bool isIn(unsigned short* arr, unsigned short size, unsigned short value);
 bool isIn(int* arr, unsigned short size, int value);
@@ -18,9 +17,10 @@ bool isIn(unsigned char* arr, unsigned short size, unsigned char value);
 bool isIn(char** arr, unsigned short size, char* value, unsigned short valueSize);
 
 // Trim - to trim whitespace at end of C-style string
-
 char* Trim(char* line, char symbol = ' ');
 
 // sizeOfCString - to get size of C-style string
-
 unsigned short sizeOfCString(char* line);
+
+// isSameStrings (guess what it does)
+bool isSameStrings(char* line1, char* line2);

@@ -12,9 +12,19 @@ CONSOLE_SCREEN_BUFFER_INFOEX ConsoleInfo;
 HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 
 char** LocationInfo = new char*[0];
-short LocationInfoSize = 0;
+unsigned short LocationInfoSize = 0;
+char* Planet = new char[11] {"Paradarium"};
+char* Location = new char[5] {"CK25"};
+
+char Inventory[14][44] = {{""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
+short InventoryCounts[14] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+short InventorySize = 6;
+const short ItemNameLength = 44, MaxInventorySize = 14;
+
 
 void ChangeColorSet(short number) {
+    // Changes current 4-bit color set of windows console
+
     const COLORREF set1[16] = {
             0x000C0C0C,
             0x00468A25,
@@ -48,6 +58,9 @@ void ChangeColorSet(short number) {
 }
 
 void printColorizedText(char* line, unsigned short size, char colorDeterminant = '$') {
+    // simplifies output of colored text. you need determinant and to hex numbers after it - foreground and background
+    // uses 16 colors from color set of windows console
+
     HANDLE hOutputConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     char colorSet[] = {"0123456789ABCDEF"};
     short back, fore;
@@ -85,6 +98,7 @@ void printColorizedText(char* line, unsigned short size, char colorDeterminant =
         }
     }
 }
+
 
 char** LoadLocationInfo(char location[], char world[]) {
     short i;
@@ -136,6 +150,21 @@ char** LoadLocationInfo(char location[], char world[]) {
 }
 
 
+void useItem(char Item[]) {
+
+}
+
+void displayInventory() {
+    system("cls");
+    for (short i = 0; i < MaxInventorySize - InventorySize; i++) {
+        cout << '\n' << endl;
+    }
+    for (short i = InventorySize; i > 0; i--) {
+
+    }
+}
+
+
 int main() {
     SetConsoleOutputCP(CP_UTF8);
 
@@ -149,7 +178,8 @@ int main() {
 
     ChangeColorSet(1);
 
-    LocationInfo = LoadLocationInfo({"CK26"}, {"Paradarium"});
+    cout << "убери меня с глаз долой";
+    displayInventory();
 
 
     while (1) {
