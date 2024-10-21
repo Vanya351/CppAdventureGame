@@ -17,8 +17,8 @@ char* Planet = new char[11] {"Paradarium"};
 char* Location = new char[5] {"CK25"};
 
 const short ItemNameLength = 44, MaxInventorySize = 14;
-char Inventory[MaxInventorySize][ItemNameLength] = {{""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
-unsigned short InventoryCounts[MaxInventorySize] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char Inventory[MaxInventorySize][ItemNameLength] = {{"Титан"}, {"a"}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
+unsigned long long int InventoryCounts[MaxInventorySize] = {1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 short InventorySize = 6;
 
 // head, body, legs, feet, right hand, left hand, hold in right hand, hold in left hand
@@ -84,7 +84,49 @@ void ChangeColorSet(short number) {
     SetConsoleScreenBufferInfoEx(hConsole, &ConsoleInfo);
 }
 
-void printColorizedText(char* line, unsigned short size, char colorDeterminant = '$') {
+void printColorizedText(char line[], unsigned short size, char colorDeterminant = '$') {
+    // simplifies output of colored text. you need determinant and to hex numbers after it - foreground and background
+    // uses 16 colors from color set of windows console
+
+    HANDLE hOutputConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    char colorSet[] = {"0123456789ABCDEF"};
+    short back, fore;
+
+    for (unsigned short i = 0; i < size; i++) {
+        if (line[i] == colorDeterminant) {
+            if (isIn(colorSet, 16, line[i + 1])) {
+                switch (line[i + 1]) {
+                    case 'A': fore = 10; break;
+                    case 'B': fore = 11; break;
+                    case 'C': fore = 12; break;
+                    case 'D': fore = 13; break;
+                    case 'E': fore = 14; break;
+                    case 'F': fore = 15; break;
+                    default: fore = (short)(line[i + 1] - '0');
+                }
+
+                switch (line[i + 2]) {
+                    case 'A': back = 10; break;
+                    case 'B': back = 11; break;
+                    case 'C': back = 12; break;
+                    case 'D': back = 13; break;
+                    case 'E': back = 14; break;
+                    case 'F': back = 15; break;
+                    default: back = (short)(line[i + 2] - '0');
+                }
+
+                SetConsoleTextAttribute(hOutputConsole, fore + back * 16);
+                i += 2;
+            } else {
+                cout << line[i];
+            }
+        } else {
+            cout << line[i];
+        }
+    }
+}
+
+void printColorizedText(const char line[], unsigned short size, char colorDeterminant = '$') {
     // simplifies output of colored text. you need determinant and to hex numbers after it - foreground and background
     // uses 16 colors from color set of windows console
 
@@ -181,9 +223,17 @@ void useItem(char Item[]) {
 
 }
 
+void itemInfo(char Item[]) {
+
+}
+
 void displayInventory() {
-    bool itemChosen = false;
-    short number = 0, item = 0;
+    bool loopBreaked, bpR = false, bpL = false, enterPressed = false, bwpR = false, bwpL = false, enterWasPressed = false;
+    short menu = 1, number = 1, item = 30, count = 0;
+    char clrsbs[] = {"$70"};   // color string base
+    char clrsci[] = {"$68"};   // color string current item
+    char clrsbut[] = {"$07"};  // color string button
+    char clrseq[] = {"$10"};   // color string equipment
 
     do {
         system("cls");
@@ -191,50 +241,353 @@ void displayInventory() {
             cout << endl;
         }
         for (short i = InventorySize; i > 0; i -= 2) {
+            if (item == i - 1) printColorizedText(clrsci, 3);
             cout << i - 1 << ". ";
+            if (InventoryCounts[i - 2] > 0) {
+                cout << Inventory[i - 2] << " x " << InventoryCounts[i - 2];
+                printColorizedText(clrsbs, 3);
+                char* itemName = Trim(Inventory[i - 2]);
+                for (short j = 0; j < ItemNameLength - sizeOfCString(itemName); j++) {
+                    cout << ' ';
+                }
+                delete[] itemName;
+            } else {
+                for (short j = 0; j < ItemNameLength + 3; j++) {
+                    cout << ' ';
+                }
+            }
+            printColorizedText(clrsbs, 3);
+
+            if (item == i) printColorizedText(clrsci, 3);
+            cout << i << ". ";
             if (InventoryCounts[i - 1] > 0) {
                 cout << Inventory[i - 1] << " x " << InventoryCounts[i - 1];
+                printColorizedText(clrsbs, 3);
+                char* itemName = Trim(Inventory[i - 1]);
+                for (short j = 0; j < ItemNameLength - sizeOfCString(itemName); j++) {
+                    cout << ' ';
+                }
+                delete[] itemName;
             } else {
                 for (short j = 0; j < ItemNameLength + 3; j++) {
                     cout << ' ';
                 }
             }
-
-            cout << i << ". ";
-            if (InventoryCounts[i] > 0) {
-                cout << Inventory[i] << " x " << InventoryCounts[i];
-            } else {
-                for (short j = 0; j < ItemNameLength + 3; j++) {
-                    cout << ' ';
-                }
-            }
+            printColorizedText(clrsbs, 3);
             cout << "\n" << endl;
         }
 
-        char text[] = {"$10"};
-        printColorizedText(text, sizeOfCString(text));
-        cout << "\n\nголова: " << EquipmentInventory[0] << "     тело: " << EquipmentInventory[1] << endl;
-        cout << "ноги: " << EquipmentInventory[2] << "     стопы: " << EquipmentInventory[3] << endl;
-        cout << "на правой руке: " << EquipmentInventory[4] << "     на левой руке: " << EquipmentInventory[5] << endl;
-        cout << "предмет в правой руке: " << EquipmentInventory[6] << "     предмет в левой руке: " << EquipmentInventory[7] << endl;
-        text[1] = '7';
-        printColorizedText(text, sizeOfCString(text));
+        printColorizedText(clrseq, 3);
+        cout << '\n' << endl;
 
-        cout << "\n\nВаш инвентарь.\nДоступные действия (введите число): 1 выбрать предмет, 2 выйти.\n>>";
-        cin >> number;
+        if (item == 15) printColorizedText(clrsci, 3);
+        cout << "голова: " << EquipmentInventory[0];
+        printColorizedText(clrseq, 3);
+        cout << "     ";
 
-        if (number < 1 || number > 2) {
-            cout << "\nКакая-то туманность в мыслях, не могу понять чего же я сам хочу";
-            Sleep(3500);
-        } else if (number == 1) {
-            cout << "Какой предмет взять?\n(номер слота. индексы для оборудования: голова 15, тело 16, ноги 18, стопы 19, "
-                    "правая рука 20, левая рука 21, предмет в правой руке 22, предмет в левой руке 23)\n>>";
-            cin >> item;
-            if (item < 1 || item > 23) {
-                cout << "";
+        if (item == 16) printColorizedText(clrsci, 3);
+        cout << "тело: " << EquipmentInventory[1];
+        printColorizedText(clrseq, 3);
+        cout << endl;
+
+        if (item == 17) printColorizedText(clrsci, 3);
+        cout << "ноги: " << EquipmentInventory[2];
+        printColorizedText(clrseq, 3);
+        cout << "     ";
+
+        if (item == 18) printColorizedText(clrsci, 3);
+        cout << "стопы: " << EquipmentInventory[3];
+        printColorizedText(clrseq, 3);
+        cout << endl;
+
+        if (item == 19) printColorizedText(clrsci, 3);
+        cout << "на правой руке: " << EquipmentInventory[4];
+        printColorizedText(clrseq, 3);
+        cout << "     ";
+
+        if (item == 20) printColorizedText(clrsci, 3);
+        cout << "на левой руке: " << EquipmentInventory[5];
+        printColorizedText(clrseq, 3);
+        cout << endl;
+
+        if (item == 21) printColorizedText(clrsci, 3);
+        cout << "предмет в правой руке: " << EquipmentInventory[6];
+        printColorizedText(clrseq, 3);
+        cout << "     ";
+
+        if (item == 22) printColorizedText(clrsci, 3);
+        cout << "предмет в левой руке: " << EquipmentInventory[7];
+        printColorizedText(clrseq, 3);
+        cout << endl;
+
+        printColorizedText(clrsbs, 3);
+        cout << "\n\nВаш инвентарь.\n" << endl;
+
+        switch (menu) {
+            case 1: {
+                if (number == 1) printColorizedText(clrsbut, 3);
+                cout << " выйти ";
+                printColorizedText(clrsbs, 3);
+                cout << "     ";
+
+                if (number == 2) printColorizedText(clrsbut, 3);
+                cout << " выбрать предмет ";
+                printColorizedText(clrsbs, 3);
+                cout << endl;
+
+                do {
+                    if ((GetKeyState(VK_RIGHT) & 0x8000) && !bpR && !bpL && !bwpR && number < 2) {
+                        bpR = true;
+                        bwpR = true;
+                        number++;
+                    } else if (!(GetKeyState(VK_RIGHT) & 0x8000)) {
+                        bpR = false;
+                        bwpR = false;
+                    }
+
+                    if ((GetKeyState(VK_LEFT) & 0x8000) && !bpR && !bpL && !bwpL  && number > 1) {
+                        bpL = true;
+                        bwpL = true;
+                        number--;
+                    } else if (!(GetKeyState(VK_LEFT) & 0x8000)) {
+                        bpL = false;
+                        bwpL = false;
+                    }
+
+                    if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                        enterPressed = true;
+                        enterWasPressed = true;
+                    } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                        enterPressed = false;
+                        enterWasPressed = false;
+                    }
+
+                    Sleep(30);
+                } while (!enterPressed && !bpR && !bpL);
+
+
+                if (number == 2 && enterPressed) {
+                    menu = 2;
+                    number = 1;
+                    enterPressed = false;
+                }
+                break;
+            }
+            case 2: {
+                cout << "Какой предмет выбрать?\n(номер слота. индексы для оборудования: голова 15, тело 16, ноги 17, стопы 18, "
+                        "правая рука 19, левая рука 20, предмет в правой руке 21, предмет в левой руке 22. 25 для выхода)\n>>";
+                FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+                cin >> item;
+
+                if (item == 25) {
+                    menu = 1;
+                } else if (item < 1 || item > 23) {
+                    enterPressed = false;
+                    item = 30;
+
+                    cout << "'Что-то я такого номера не нахожу'\n" << endl;
+
+                    printColorizedText(clrsbut, 3);
+                    cout << " ок ";
+                    printColorizedText(clrsbs, 3);
+                    cout << endl;
+
+                    do {
+                        if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                            enterPressed = true;
+                            enterWasPressed = true;
+                        } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                            enterPressed = false;
+                            enterWasPressed = false;
+                        }
+
+                        Sleep(30);
+                    } while (!enterPressed);
+                    enterPressed = false;
+                } else if ((item < MaxInventorySize + 1 && InventoryCounts[item - 1] == 0) ||
+                           (item >= MaxInventorySize + 1 && EquipmentInventory[item - MaxInventorySize + 1] == 0)) {
+                    enterPressed = false;
+                    cout << "Тут пусто. Лучше поискать в другом слоте\n" << endl;
+
+                    printColorizedText(clrsbut, 3);
+                    cout << " ок ";
+                    printColorizedText(clrsbs, 3);
+                    cout << endl;
+
+                    item = 30;
+
+                    do {
+                        if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                            enterPressed = true;
+                            enterWasPressed = true;
+                        } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                            enterPressed = false;
+                            enterWasPressed = false;
+                        }
+
+                        Sleep(30);
+                    } while (!enterPressed);
+                    enterPressed = false;
+                } else {
+                    menu = 3;
+                    enterPressed = false;
+                }
+                break;
+            }
+            case 3: {
+                if (number == 1) printColorizedText(clrsbut, 3);
+                cout << " выйти ";
+                printColorizedText(clrsbs, 3);
+                cout << "     ";
+
+                if (number == 2) printColorizedText(clrsbut, 3);
+                if (item < MaxInventorySize + 1) {
+                    cout << " использовать ";
+                } else {
+                    cout << " снять ";
+                }
+                printColorizedText(clrsbs, 3);
+                cout << "     ";
+
+                if (number == 3) printColorizedText(clrsbut, 3);
+                cout << " выкинуть ";
+                printColorizedText(clrsbs, 3);
+                cout << "     ";
+
+                if (number == 4) printColorizedText(clrsbut, 3);
+                cout << " о предмете ";
+                printColorizedText(clrsbs, 3);
+                cout << endl;
+
+                do {
+                    if ((GetKeyState(VK_RIGHT) & 0x8000) && !bpR && !bpL && !bwpR && number < 4) {
+                        bpR = true;
+                        bwpR = true;
+                        number++;
+                    } else if (!(GetKeyState(VK_RIGHT) & 0x8000)) {
+                        bpR = false;
+                        bwpR = false;
+                    }
+
+                    if ((GetKeyState(VK_LEFT) & 0x8000) && !bpR && !bpL && !bwpL  && number > 1) {
+                        bpL = true;
+                        bwpL = true;
+                        number--;
+                    } else if (!(GetKeyState(VK_LEFT) & 0x8000)) {
+                        bpL = false;
+                        bwpL = false;
+                    }
+
+                    if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                        enterPressed = true;
+                        enterWasPressed = true;
+                    } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                        enterPressed = false;
+                        enterWasPressed = false;
+                    }
+
+                    Sleep(30);
+                } while (!enterPressed && !bpR && !bpL);
+
+                if (number == 2 && enterPressed && item < 15) {
+                    useItem(Inventory[item - 1]);
+                    enterPressed = false;
+                } else if (number == 2 && enterPressed && item >= MaxInventorySize + 1) {
+                    loopBreaked = false;
+                    enterPressed = false;
+                    for (short i = 0; i < MaxInventorySize - InventorySize; i++) {
+                        if (InventoryCounts[i] == 0) {
+                            InventoryCounts[i]++;
+                            for (short j = 0; j < sizeOfCString(Inventory[i]); j++) {
+                                Inventory[i][j] = EquipmentInventory[item - MaxInventorySize + 1][j];
+                                EquipmentInventory[item - MaxInventorySize + 1][j] = ' ';
+                            }
+                            loopBreaked = true;
+                            item = 30;
+                            break;
+                        }
+                    }
+                    if (!loopBreaked) {
+                        cout << "В инвентаре нет мест, складывать некуда\n" << endl;
+
+                        printColorizedText(clrsbut, 3);
+                        cout << " ок ";
+                        printColorizedText(clrsbs, 3);
+
+                        do {
+                            if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                                enterPressed = true;
+                                enterWasPressed = true;
+                            } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                                enterPressed = false;
+                                enterWasPressed = false;
+                            }
+
+                            Sleep(30);
+                        } while (!enterPressed);
+                        enterPressed = false;
+                    }
+
+                } else if (number == 3 && enterPressed) {
+                    menu = 4;
+                    enterPressed = false;
+                } else if (number == 4 && enterPressed) {
+                    itemInfo(item < MaxInventorySize + 1 ? Inventory[item - 1] : EquipmentInventory[item - MaxInventorySize + 1]);
+                }
+                break;
+            }
+            case 4: {
+                cout << "Сколько выкидывать? (0 или меньше для отмены; максимум или больше, чтобы выкинуть всё)\n>>";
+                FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+                cin >> count;
+
+                if (count <= 0) {
+                    menu = 1;
+                } else {
+                    enterPressed = false;
+
+                    if (item >= MaxInventorySize + 1) {
+                        cout << "предмет '" << EquipmentInventory[item - 15] << "' выкинут" << endl;
+                        for (short i = 0; i < sizeOfCString(EquipmentInventory[item - MaxInventorySize + 1]); i++) {
+                            EquipmentInventory[item - MaxInventorySize + 1][i] = ' ';
+                        }
+                    } else if (count >= InventoryCounts[item - 1]) {
+                        cout << "все предметы '" << Inventory[item - 1] << "' выкинуты" << endl;
+                        for (short i = 0; i < sizeOfCString(Inventory[item - 1]); i++) {
+                            Inventory[item - 1][i] = ' ';
+                        }
+                        InventoryCounts[item - 1] = 0;
+                    } else {
+                        cout << "предмет '" << Inventory[item - 1] << "' x " << count << " выкинут" << endl;
+                        InventoryCounts[item - 1] -= count;
+                    }
+
+                    printColorizedText(clrsbut, 3);
+                    cout << " ок ";
+                    printColorizedText(clrsbs, 3);
+                    cout << endl;
+
+                    do {
+                        if ((GetKeyState(VK_RETURN) & 0x8000) && !enterPressed && !enterWasPressed) {
+                            enterPressed = true;
+                            enterWasPressed = true;
+                        } else if (!(GetKeyState(VK_RETURN) & 0x8000)) {
+                            enterPressed = false;
+                            enterWasPressed = false;
+                        }
+
+                        Sleep(30);
+                    } while (!enterPressed);
+
+                    item = 30;
+                    enterPressed = false;
+                    number = 1;
+                    menu = 1;
+                }
+                break;
             }
         }
-    } while (number != 2);
+    } while (number != 1 || !enterPressed);
 }
 
 

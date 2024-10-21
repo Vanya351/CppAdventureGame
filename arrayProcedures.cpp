@@ -118,6 +118,7 @@ char* Trim(char* line, char symbol) {
     for (i = 0; i < pos; i++) {
         newLine[i] = line[i];
     }
+    newLine[pos] = '\0';
 
     return newLine;
 }
