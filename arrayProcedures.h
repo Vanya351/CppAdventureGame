@@ -21,6 +21,8 @@ char* Trim(char* line, char symbol = ' ');
 
 // sizeOfCString - to get size of C-style string
 unsigned short sizeOfCString(char* line);
+unsigned short sizeOfCString(const char* line);
 
 // isSameStrings (guess what it does)
 bool isSameStrings(char* line1, char* line2);
+bool isSameStrings(char* line1, const char* line2);

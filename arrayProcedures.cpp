@@ -130,6 +130,14 @@ unsigned short sizeOfCString(char* line) {
     return i;
 }
 
+unsigned short sizeOfCString(const char* line) {
+    short i = 0;
+    while (line[i] != '\0') {
+        i++;
+    }
+    return i;
+}
+
 bool isSameStrings(char* line1, char* line2) {
     unsigned short size1, size2;
     size1 = sizeOfCString(line1);
@@ -143,5 +151,21 @@ bool isSameStrings(char* line1, char* line2) {
     } else {
         cond = false;
     }
-    return cond
+    return cond;
+}
+
+bool isSameStrings(char* line1, const char* line2) {
+    unsigned short size1, size2;
+    size1 = sizeOfCString(line1);
+    size2 = sizeOfCString(line2);
+    bool cond = true;
+    if (size1 == size2) {
+        for (short i = 0; i < size1; i++) {
+            cond = cond && (line1[i] == line2[i]);
+            if (!cond) break;
+        }
+    } else {
+        cond = false;
+    }
+    return cond;
 }
