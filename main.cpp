@@ -357,7 +357,10 @@ void displayInventory() {
                 cout << "\n\nКакой предмет выбрать?\n(номер слота. индексы для оборудования: голова 15, тело 16, ноги 17, стопы 18, "
                         "правая рука 19, левая рука 20, предмет в правой руке 21, предмет в левой руке 22. 25 для выхода)\n>>";
                 FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-                cin >> item;
+                if (!(cin >> item)) {
+                    cin.clear();
+                    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
 
                 if (item == 25) {
                     menu = 1;
@@ -365,7 +368,7 @@ void displayInventory() {
                     enterPressed = false;
                     item = 30;
 
-                    cout << "'Что-то я такого номера не нахожу'\n" << endl;
+                    cout << "'Что-то я такого номера не нахожу'" << endl;
 
                     printColorizedText("\n   $07 ок $70\n", 15);
 
@@ -384,7 +387,7 @@ void displayInventory() {
                 } else if ((item < MaxInventorySize + 1 && InventoryCounts[item - 1] == 0) ||
                            (item >= MaxInventorySize + 1 && EquipmentInventory[item - (MaxInventorySize + 1)] == 0)) {
                     enterPressed = false;
-                    cout << "Тут пусто. Лучше поискать в другом слоте\n" << endl;
+                    cout << "Тут пусто. Лучше поискать в другом слоте" << endl;
 
                     printColorizedText("\n   $07 ок $70\n", 15);
 
@@ -540,12 +543,17 @@ void displayInventory() {
                 break;
             }
             case 4: {
-                cout << "Сколько выкидывать? (0 или меньше для отмены; максимум или больше, чтобы выкинуть всё)\n>>";
+                cout << "\n\nСколько выкидывать? (0 или меньше для отмены; максимум или больше, чтобы выкинуть всё)\n>>";
                 FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-                cin >> count;
+                if (!(cin >> count)) {
+                    cin.clear();
+                    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                }
 
                 if (count <= 0) {
-                    menu = 1;
+                    number = 2;
+                    enterPressed = false;
+                    menu = 3;
                 } else {
                     enterPressed = false;
 
@@ -554,12 +562,14 @@ void displayInventory() {
                         for (short i = 0; i < sizeOfCString(EquipmentInventory[item - (MaxInventorySize + 1)]); i++) {
                             EquipmentInventory[item - (MaxInventorySize + 1)][i] = ' ';
                         }
+                        item = 30;
                     } else if (count >= InventoryCounts[item - 1]) {
                         cout << "все предметы '" << Inventory[item - 1] << "' выкинуты" << endl;
                         for (short i = 0; i < sizeOfCString(Inventory[item - 1]); i++) {
                             Inventory[item - 1][i] = ' ';
                         }
                         InventoryCounts[item - 1] = 0;
+                        item = 30;
                     } else {
                         cout << "предмет '" << Inventory[item - 1] << "' x " << count << " выкинут" << endl;
                         InventoryCounts[item - 1] -= count;
@@ -580,10 +590,14 @@ void displayInventory() {
                         Sleep(30);
                     } while (!enterPressed);
 
-                    item = 30;
                     enterPressed = false;
-                    number = 1;
-                    menu = 1;
+                    if (item != 30) {
+                        number = 2;
+                        menu = 3;
+                    } else {
+                        number = 1;
+                        menu = 1;
+                    }
                 }
                 break;
             }
