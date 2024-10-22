@@ -15,6 +15,11 @@ bool isIn(long double* arr, unsigned short size, long double value);
 bool isIn(char* arr, unsigned short size, char value);
 bool isIn(unsigned char* arr, unsigned short size, unsigned char value);
 bool isIn(char** arr, unsigned short size, char* value, unsigned short valueSize);
+bool isIn(char arr[][44], unsigned short size, char* value, unsigned short valueSize);
+
+// posIn - to get position of element in array
+unsigned short posIn(char** arr, unsigned short size, char* value, unsigned short valueSize);
+unsigned short posIn(char arr[][44], unsigned short size, char* value, unsigned short valueSize);
 
 // Trim - to trim whitespace at end of C-style string
 char* Trim(char* line, char symbol = ' ');
