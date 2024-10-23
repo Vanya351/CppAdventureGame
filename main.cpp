@@ -13,7 +13,7 @@ HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NUL
 
 char** LocationInfo = new char*[0];
 unsigned short LocationInfoSize = 0;
-char* Planet = new char[11] {"Paradarium"};
+char* World = new char[11] {"Paradarium"};
 char* Location = new char[5] {"CK25"};
 
 const short ItemNameLength = 44, MaxInventorySize = 14;
@@ -25,6 +25,8 @@ short InventorySize = 6;
 char EquipmentInventory[8][ItemNameLength] = {{"шлем"}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
 
 unsigned short getEquipId(char* name) {
+    // Returns equipment slot id from given name
+
     // I can't use switch case with char arrays, so I forced to use if :(
 
     const char head[] = {"head"}, body[] = {"body"}, legs[] = {"legs"}, feet[] = {"feet"},
@@ -169,7 +171,7 @@ void printColorizedText(const char line[], unsigned short size, char colorDeterm
 }
 
 
-char** LoadLocationInfo(char location[], char world[]) {
+char** LoadLocationInfo(char locationId[], char worldId[]) {
     short i;
     for (i = 0; i < LocationInfoSize; i++) {
         delete[] LocationInfo[i];
@@ -178,9 +180,9 @@ char** LoadLocationInfo(char location[], char world[]) {
 
     XLDocument doc;
     doc.open("map.xlsx");
-    auto wks = doc.workbook().worksheet(world);
+    auto wks = doc.workbook().worksheet(worldId);
 
-    string line = wks.cell(location).getString();
+    string line = wks.cell(locationId).getString();
 
     short counter = 0;
     i = 0;
@@ -605,6 +607,11 @@ void displayInventory() {
     } while (number != 1 || !enterPressed);
 }
 
+void displayLocation(char locationId[], char worldId[]) {
+    if (isIn(LocationInfo, LocationInfoSize, "P", 1)) {
+
+    }
+}
 
 int main() {
     SetConsoleOutputCP(CP_UTF8);
@@ -619,7 +626,7 @@ int main() {
 
     ChangeColorSet(1);
 
-    displayInventory();
+    displayLocation(Location, World);
 
 
     while (1) {

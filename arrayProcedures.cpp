@@ -115,6 +115,18 @@ bool isIn(char arr[][44], unsigned short size, char* value, unsigned short value
     return false;
 }
 
+bool isIn(char arr[][44], unsigned short size, const char* value, unsigned short valueSize) {
+    bool cond;
+    for (unsigned short i = 0; i < size; i++) {
+        cond = true;
+        for (int j = 0; j < valueSize; ++j) {
+            cond = cond && (arr[i][j] == value[j]);
+        }
+        if (cond) return true;
+    }
+    return false;
+}
+
 
 unsigned short posIn(char** arr, unsigned short size, char* value, unsigned short valueSize) {
     bool cond;
