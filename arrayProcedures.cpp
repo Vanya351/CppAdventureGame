@@ -103,7 +103,7 @@ bool isIn(char** arr, unsigned short size, char* value, unsigned short valueSize
     return false;
 }
 
-bool isIn(char arr[][44], unsigned short size, char* value, unsigned short valueSize) {
+bool isIn(char** arr, unsigned short size, const char* value, unsigned short valueSize) {
     bool cond;
     for (unsigned short i = 0; i < size; i++) {
         cond = true;

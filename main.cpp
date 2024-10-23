@@ -48,6 +48,7 @@ unsigned short getEquipId(char* name) {
     } else if (isSameStrings(name, lhandh)) {
         return 7;
     }
+    return 0;
 }
 
 
@@ -614,6 +615,7 @@ void displayLocation(char locationId[], char worldId[]) {
 }
 
 int main() {
+
     SetConsoleOutputCP(CP_UTF8);
 
     HWND hwConsole = GetConsoleWindow();
@@ -626,7 +628,7 @@ int main() {
 
     ChangeColorSet(1);
 
-    displayLocation(Location, World);
+    displayInventory();
 
 
     while (1) {
