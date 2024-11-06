@@ -1,9 +1,11 @@
 #include <iostream>
 #include <fstream>
+#include <random>
 #include <OpenXLSX.hpp>
 #include <windows.h>
 
 #include "arrayProcedures.h"
+#include "displayProcedures.h"
 
 using namespace std;
 using namespace OpenXLSX;
@@ -14,15 +16,22 @@ HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NUL
 char** LocationInfo = new char*[0];
 unsigned short LocationInfoSize = 0;
 char* World = new char[11] {"Paradarium"};
-char* Location = new char[5] {"CK25"};
+char* Location = new char[5] {"CL25"};
+
+short WorldDate;
+short WorldTime;
+
+const short WorldDayTimeParadarium = 21;
+// start: 0 - night with moon, 1 - moonset, 2 - night without moon, 3 - sunrise, 4 - day, 5 - sunset, 6 - night without moon, 7 - moonrise
+const short DayTimeCycleParadarium[] = {3, 4, 5, 6, 16, 17, 18, 19};
 
 const short ItemNameLength = 44, MaxInventorySize = 14;
-char Inventory[MaxInventorySize][ItemNameLength] = {{"Титан"}, {"a"}, {"шлем"}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
-unsigned long long int InventoryCounts[MaxInventorySize] = {1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char Inventory[MaxInventorySize][ItemNameLength] = {{""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
+unsigned long long int InventoryCounts[MaxInventorySize] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 short InventorySize = 6;
 
 // head, body, legs, feet, right hand, left hand, hold in right hand, hold in left hand
-char EquipmentInventory[8][ItemNameLength] = {{"шлем"}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
+char EquipmentInventory[8][ItemNameLength] = {{""}, {""}, {""}, {""}, {""}, {""}, {""}, {""}};
 
 unsigned short getEquipId(char* name) {
     // Returns equipment slot id from given name
@@ -86,91 +95,6 @@ void ChangeColorSet(short number) {
 
     SetConsoleScreenBufferInfoEx(hConsole, &ConsoleInfo);
 }
-
-void printColorizedText(char line[], unsigned short size, char colorDeterminant = '$') {
-    // simplifies output of colored text. you need determinant and to hex numbers after it - foreground and background
-    // uses 16 colors from color set of windows console
-
-    HANDLE hOutputConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    char colorSet[] = {"0123456789ABCDEF"};
-    short back, fore;
-
-    for (unsigned short i = 0; i < size; i++) {
-        if (line[i] == colorDeterminant) {
-            if (isIn(colorSet, 16, line[i + 1])) {
-                switch (line[i + 1]) {
-                    case 'A': fore = 10; break;
-                    case 'B': fore = 11; break;
-                    case 'C': fore = 12; break;
-                    case 'D': fore = 13; break;
-                    case 'E': fore = 14; break;
-                    case 'F': fore = 15; break;
-                    default: fore = (short)(line[i + 1] - '0');
-                }
-
-                switch (line[i + 2]) {
-                    case 'A': back = 10; break;
-                    case 'B': back = 11; break;
-                    case 'C': back = 12; break;
-                    case 'D': back = 13; break;
-                    case 'E': back = 14; break;
-                    case 'F': back = 15; break;
-                    default: back = (short)(line[i + 2] - '0');
-                }
-
-                SetConsoleTextAttribute(hOutputConsole, fore + back * 16);
-                i += 2;
-            } else {
-                cout << line[i];
-            }
-        } else {
-            cout << line[i];
-        }
-    }
-}
-
-void printColorizedText(const char line[], unsigned short size, char colorDeterminant = '$') {
-    // simplifies output of colored text. you need determinant and to hex numbers after it - foreground and background
-    // uses 16 colors from color set of windows console
-
-    HANDLE hOutputConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    char colorSet[] = {"0123456789ABCDEF"};
-    short back, fore;
-
-    for (unsigned short i = 0; i < size; i++) {
-        if (line[i] == colorDeterminant) {
-            if (isIn(colorSet, 16, line[i + 1])) {
-                switch (line[i + 1]) {
-                    case 'A': fore = 10; break;
-                    case 'B': fore = 11; break;
-                    case 'C': fore = 12; break;
-                    case 'D': fore = 13; break;
-                    case 'E': fore = 14; break;
-                    case 'F': fore = 15; break;
-                    default: fore = (short)(line[i + 1] - '0');
-                }
-
-                switch (line[i + 2]) {
-                    case 'A': back = 10; break;
-                    case 'B': back = 11; break;
-                    case 'C': back = 12; break;
-                    case 'D': back = 13; break;
-                    case 'E': back = 14; break;
-                    case 'F': back = 15; break;
-                    default: back = (short)(line[i + 2] - '0');
-                }
-
-                SetConsoleTextAttribute(hOutputConsole, fore + back * 16);
-                i += 2;
-            } else {
-                cout << line[i];
-            }
-        } else {
-            cout << line[i];
-        }
-    }
-}
-
 
 char** LoadLocationInfo(char locationId[], char worldId[]) {
     short i;
@@ -608,14 +532,137 @@ void displayInventory() {
     } while (number != 1 || !enterPressed);
 }
 
-void displayLocation(char locationId[], char worldId[]) {
-    if (isIn(LocationInfo, LocationInfoSize, "P", 1)) {
+void displayLocation(char** locInf, char worldId[]) {
+    const short locSizeY = 7;
+    const short locSizeX = 100;
 
+    char locationAppearance[locSizeY][locSizeX];
+    char copyLine[locSizeX];
+
+    char description[256];
+    char descriptionSpecial[256];
+    char descriptionNear[256];
+    char descriptionTime[256];
+
+    char locationColor[] = {"$70"};
+
+    system("cls");
+
+    if (isSameStrings(worldId, "Paradarium")) {
+        if (isIn(LocationInfo, LocationInfoSize, "P", 1)) {
+            locationColor[1] = '2'; locationColor[2] = '0';
+
+            // Plains basic appearance
+            strcpy(locationAppearance[0], "                                                                 \0");
+            strcpy(locationAppearance[1], "                                                                 \0");
+            strcpy(locationAppearance[2], "                                                                 \0");
+            strcpy(locationAppearance[3], "                                                                 \0");
+            strcpy(locationAppearance[4], "$20_______________\\|/_________________________________\\|/______\0");
+            strcpy(locationAppearance[5], "$20    \\|/                  \\|/                \\|/    \0");
+            strcpy(locationAppearance[6], "$20                  \\|/                                 \\|/\0");
+
+            strcpy(description, "Вы находитесь в равнинах. Мелкая зелёная травка колышется на ветру.\n\0");
+
+            // if it has river
+            if (isIn(LocationInfo, LocationInfoSize, "R", 1)) {
+                strcpy(copyLine, " $30/$F3 ~ ~ ~ ~ ~ $30\\$20          \\|/\0");
+                for (short i = 28; i < 69; i++) {
+                    locationAppearance[5][i] = copyLine[i - 28];
+                }
+
+                strcpy(copyLine, "$30/$F3 ~ ~ ~ ~ ~ ~ $30\\$20                \\|/\0");
+                for (short i = 28; i < 74; i++) {
+                    locationAppearance[6][i] = copyLine[i - 28];
+                }
+
+                strcpy(descriptionSpecial, "По низменности течёт небыстрая река.\n\0");
+            }
+
+            // if it has berry bush
+            if (isIn(LocationInfo, LocationInfoSize, "BRB", 3)) {
+                strcpy(copyLine, "$10______      \0");
+                for (short i = 47; i < 63; i++) {
+                    locationAppearance[3][i] = copyLine[i - 47];
+                }
+
+                strcpy(copyLine, "$10/ $40o  o $10|$20______\0");
+                for (short i = 49; i < 76; i++) {
+                    locationAppearance[4][i] = copyLine[i - 49];
+                }
+
+                strcpy(copyLine, "  $10\\ $40 o   $10/$20\0");
+                for (short i = 47; i < 70; i++) {
+                    locationAppearance[5][i] = copyLine[i - 47];
+                }
+
+                strcpy(descriptionSpecial, "Неподалёку вы видите ягодный куст.\n\0");
+            }
+        }
+
+        // Sun/mun relative to current time
+        if (WorldTime <= DayTimeCycleParadarium[0] || WorldTime > DayTimeCycleParadarium[7]) {
+            strcpy(copyLine, "$70(\\");
+            for (short i = 30; i < 36; i++) {
+                locationAppearance[1][i] = copyLine[i - 30];
+            }
+
+            strcpy(copyLine, "$70¯");
+            for (short i = 31; i < 36; i++) {
+                locationAppearance[2][i] = copyLine[i - 31];
+            }
+
+            strcpy(descriptionTime, "В небе виднеется небольшой месяц.\n\0");
+        } else if (WorldTime <= DayTimeCycleParadarium[1] && WorldTime > DayTimeCycleParadarium[0]) {
+            strcpy(copyLine, "$70(\\$70\0");
+            copyLine[6] = locationColor[1]; copyLine[7] = locationColor[2];
+            replaceInColorizedString(locationAppearance[4], copyLine, 30);
+
+            strcpy(descriptionTime, "Небольшой месяц плавно заходит за горизонт.\n\0");
+        } else if (WorldTime <= DayTimeCycleParadarium[2] && WorldTime > DayTimeCycleParadarium[1]) {
+            strcpy(descriptionTime, "Вокруг кромешная тьма.\n\0");
+        } else if (WorldTime <= DayTimeCycleParadarium[3] && WorldTime > DayTimeCycleParadarium[2]) {
+            strcpy(copyLine, "$E0\\__/$70");
+            copyLine[8] = locationColor[1]; copyLine[9] = locationColor[2];
+            replaceInColorizedString(locationAppearance[3], copyLine, 29);
+
+            strcpy(copyLine, "$E0($70__$E0)$70");
+            copyLine[5] = locationColor[1]; copyLine[6] = locationColor[2];
+            copyLine[14] = locationColor[1]; copyLine[15] = locationColor[2];
+            replaceInColorizedString(locationAppearance[4], copyLine, 32);
+
+            strcpy(descriptionTime, "Яркая утренняя заря.\n\0");
+        } else if (WorldTime <= DayTimeCycleParadarium[4] && WorldTime > DayTimeCycleParadarium[3]) {
+            strcpy(copyLine, "$E0\\__/$70");
+            copyLine[8] = locationColor[1]; copyLine[9] = locationColor[2];
+            replaceInColorizedString(locationAppearance[0], copyLine, 26);
+
+            strcpy(copyLine, "$E0--(  )--$70");
+            copyLine[12] = locationColor[1]; copyLine[13] = locationColor[2];
+            replaceInColorizedString(locationAppearance[1], copyLine, 24);
+
+            strcpy(copyLine, "$E0/¯¯\\$70");
+            copyLine[10] = locationColor[1]; copyLine[11] = locationColor[2];
+            replaceInColorizedString(locationAppearance[2], copyLine, 26, 2);
+        }
     }
+
+    cout << "\n\n" << endl;
+    for (short i = 0; i < locSizeY; i++) {
+        cout << "     ";
+        printColorizedText(locationAppearance[i], locSizeX);
+        cout << endl;
+    }
+    printColorizedText("$70", 3);
+
+    cout << endl;
+    cout << description;
+    cout << descriptionSpecial;
+    cout << descriptionNear;
+    cout << descriptionTime;
 }
 
-int main() {
 
+int main() {
     SetConsoleOutputCP(CP_UTF8);
 
     HWND hwConsole = GetConsoleWindow();
@@ -628,8 +675,21 @@ int main() {
 
     ChangeColorSet(1);
 
-    displayInventory();
+    random_device rand;
+    mt19937 randGen(rand());
+    uniform_int_distribution<> randSelectTwo(1, 2);
+    uniform_int_distribution<> randSelectThree(1, 3);
+    uniform_int_distribution<> randSelectHundred(1, 100);
 
+    WorldTime = 8;
+
+    LocationInfo = LoadLocationInfo(Location, World);
+    displayLocation(LocationInfo, World);
+
+    for (short i = 0; i < LocationInfoSize; i++) {
+        delete[] LocationInfo[i];
+    }
+    delete[] LocationInfo;
 
     while (1) {
 

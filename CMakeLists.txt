@@ -11,5 +11,7 @@ add_subdirectory(OpenXLSX)
 
 add_executable(untitled main.cpp
         arrayProcedures.cpp
-        arrayProcedures.h)
+        arrayProcedures.h
+        displayProcedures.cpp
+        displayProcedures.h)
 target_link_libraries(untitled OpenXLSX::OpenXLSX)

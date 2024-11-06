@@ -1,82 +1,5 @@
 #include "arrayProcedures.h"
 
-bool isIn(short* arr, unsigned short size, short value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(unsigned short* arr, unsigned short size, unsigned short value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(int* arr, unsigned short size, int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(unsigned int* arr, unsigned short size, unsigned int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(long int* arr, unsigned short size, long int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(unsigned long int* arr, unsigned short size, unsigned long int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(long long int* arr, unsigned short size, long long int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(unsigned long long int* arr, unsigned short size, unsigned long long int value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(float* arr, unsigned short size, float value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(double* arr, unsigned short size, double value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
-bool isIn(long double* arr, unsigned short size, long double value) {
-    for (unsigned short i = 0; i < size; i++) {
-        if (arr[i] == value) return true;
-    }
-    return false;
-}
-
 bool isIn(char* arr, unsigned short size, char value) {
     for (unsigned short i = 0; i < size; i++) {
         if (arr[i] == value) return true;
@@ -108,6 +31,9 @@ bool isIn(char** arr, unsigned short size, const char* value, unsigned short val
     for (unsigned short i = 0; i < size; i++) {
         cond = true;
         for (int j = 0; j < valueSize; ++j) {
+            if (arr[i][j] == '\0') {
+                break;
+            }
             cond = cond && (arr[i][j] == value[j]);
         }
         if (cond) return true;
@@ -123,6 +49,13 @@ bool isIn(char arr[][44], unsigned short size, const char* value, unsigned short
             cond = cond && (arr[i][j] == value[j]);
         }
         if (cond) return true;
+    }
+    return false;
+}
+
+bool isIn(wchar_t* arr, unsigned short size, wchar_t value) {
+    for (unsigned short i = 0; i < size; i++) {
+        if (arr[i] == value) return true;
     }
     return false;
 }
@@ -187,6 +120,22 @@ unsigned short sizeOfCString(const char* line) {
     return i;
 }
 
+unsigned short sizeOfCString(wchar_t* line) {
+    short i = 0;
+    while (line[i] != L'\0') {
+        i++;
+    }
+    return i;
+}
+
+unsigned short sizeOfCString(const wchar_t* line) {
+    short i = 0;
+    while (line[i] != L'\0') {
+        i++;
+    }
+    return i;
+}
+
 bool isSameStrings(char* line1, char* line2) {
     unsigned short size1, size2;
     size1 = sizeOfCString(line1);
@@ -210,11 +159,78 @@ bool isSameStrings(char* line1, const char* line2) {
     bool cond = true;
     if (size1 == size2) {
         for (short i = 0; i < size1; i++) {
-            cond = cond && (line1[i] == line2[i]);
+            cond = (line1[i] == line2[i]);
             if (!cond) break;
         }
     } else {
         cond = false;
     }
     return cond;
+}
+
+void insertToString(char* line, char* value, unsigned short inputPos) {
+    unsigned short sizeLine = sizeOfCString(line), sizeValue = sizeOfCString(value), inputSize = 0, i;
+
+    for (i = sizeLine; i >= inputPos; i--) {
+        line[i + sizeValue] = line[i];
+    }
+
+    for (i = inputPos; i < sizeValue + inputPos; i++) {
+        line[i] = value[i - inputPos];
+    }
+}
+
+
+void insertToString(char* line, const char* value, unsigned short inputPos) {
+    unsigned short sizeLine = sizeOfCString(line), sizeValue = sizeOfCString(value), inputSize = 0, i;
+
+    for (i = sizeLine; i >= inputPos; i--) {
+        line[i + sizeValue] = line[i];
+    }
+
+    for (i = inputPos; i < sizeValue + inputPos; i++) {
+        line[i] = value[i - inputPos];
+    }
+}
+
+void replaceInColorizedString(char* line, char* value, unsigned short inputPos, unsigned wchars, char colorDeterminant) {
+    short shift = wchars;
+    unsigned short i, sizeLine = sizeOfCString(line), sizeValue = sizeOfCString(value);
+    char colorSet[] = {"0123456789ABCDEF"};
+
+    for (i = 0; i < sizeValue; i++) {
+        if (value[i] == colorDeterminant && isIn(colorSet, 16, value[i + 1])) {
+            shift += 3;
+            i += 2;
+        }
+    }
+
+    for (i = sizeLine; i >= inputPos; i--) {
+        line[i + shift] = line[i];
+    }
+
+    for (i = inputPos; i < inputPos + sizeValue; i++) {
+        line[i] = value[i - inputPos];
+    }
+}
+
+void replaceInColorizedString(char* line, const char* value, unsigned short inputPos, unsigned wchars, char colorDeterminant) {
+    short shift = wchars;
+    unsigned short i,sizeLine = sizeOfCString(line), sizeValue = sizeOfCString(value) ;
+    char colorSet[] = {"0123456789ABCDEF"};
+
+    for (i = 0; i < sizeValue; i++) {
+        if (value[i] == colorDeterminant && isIn(colorSet, 16, value[i + 1])) {
+            shift += 3;
+            i += 2;
+        }
+    }
+
+    for (i = sizeLine; i >= inputPos; i--) {
+        line[i + shift] = line[i];
+    }
+
+    for (i = inputPos; i < inputPos + sizeValue; i++) {
+        line[i] = value[i - inputPos];
+    }
 }
