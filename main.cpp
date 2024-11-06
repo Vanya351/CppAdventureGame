@@ -6,6 +6,7 @@
 
 #include "arrayProcedures.h"
 #include "displayProcedures.h"
+#include "randomProcedures.h"
 
 using namespace std;
 using namespace OpenXLSX;
@@ -545,11 +546,12 @@ void displayLocation(char** locInf, char worldId[]) {
     char descriptionTime[256];
 
     char locationColor[] = {"$70"};
+    unsigned int choice;
 
     system("cls");
 
     if (isSameStrings(worldId, "Paradarium")) {
-        if (isIn(LocationInfo, LocationInfoSize, "P", 1)) {
+        if (isIn(locInf, LocationInfoSize, "P", 1)) {
             locationColor[1] = '2'; locationColor[2] = '0';
 
             // Plains basic appearance
@@ -564,7 +566,7 @@ void displayLocation(char** locInf, char worldId[]) {
             strcpy(description, "Вы находитесь в равнинах. Мелкая зелёная травка колышется на ветру.\n\0");
 
             // if it has river
-            if (isIn(LocationInfo, LocationInfoSize, "R", 1)) {
+            if (isIn(locInf, LocationInfoSize, "RV", 2)) {
                 strcpy(copyLine, " $30/$F3 ~ ~ ~ ~ ~ $30\\$20          \\|/\0");
                 for (short i = 28; i < 69; i++) {
                     locationAppearance[5][i] = copyLine[i - 28];
@@ -579,7 +581,7 @@ void displayLocation(char** locInf, char worldId[]) {
             }
 
             // if it has berry bush
-            if (isIn(LocationInfo, LocationInfoSize, "BRB", 3)) {
+            if (isIn(locInf, LocationInfoSize, "BRB", 3)) {
                 strcpy(copyLine, "$10______      \0");
                 for (short i = 47; i < 63; i++) {
                     locationAppearance[3][i] = copyLine[i - 47];
@@ -611,16 +613,57 @@ void displayLocation(char** locInf, char worldId[]) {
                 locationAppearance[2][i] = copyLine[i - 31];
             }
 
-            strcpy(descriptionTime, "В небе виднеется небольшой месяц.\n\0");
-        } else if (WorldTime <= DayTimeCycleParadarium[1] && WorldTime > DayTimeCycleParadarium[0]) {
+            choice = randChoice(2);
+            switch (choice) {
+                case 1:
+                    strcpy(descriptionTime, "В небе виднеется небольшой месяц.\n\0");
+                    break;
+                case 2:
+                    strcpy(descriptionTime, "Небольшой месяц освещает всё вокруг.\n\0");
+            }
+
+        } else if ((WorldTime <= DayTimeCycleParadarium[1] && WorldTime > DayTimeCycleParadarium[0]) ||
+                   (WorldTime <= DayTimeCycleParadarium[7] && WorldTime > DayTimeCycleParadarium[6])) {
             strcpy(copyLine, "$70(\\$70\0");
             copyLine[6] = locationColor[1]; copyLine[7] = locationColor[2];
             replaceInColorizedString(locationAppearance[4], copyLine, 30);
 
-            strcpy(descriptionTime, "Небольшой месяц плавно заходит за горизонт.\n\0");
-        } else if (WorldTime <= DayTimeCycleParadarium[2] && WorldTime > DayTimeCycleParadarium[1]) {
-            strcpy(descriptionTime, "Вокруг кромешная тьма.\n\0");
-        } else if (WorldTime <= DayTimeCycleParadarium[3] && WorldTime > DayTimeCycleParadarium[2]) {
+            if (WorldTime <= DayTimeCycleParadarium[1]) {
+                choice = randChoice(2);
+                switch (choice) {
+                    case 1:
+                        strcpy(descriptionTime, "Небольшой месяц плавно заходит за горизонт.\n\0");
+                        break;
+                    case 2:
+                        strcpy(descriptionTime, "Месяц постепенно скрывается за горизонтом.\n\0");
+                }
+            } else {
+                choice = randChoice(2);
+                switch (choice) {
+                    case 1:
+                        strcpy(descriptionTime, "Месяц появляется за горизонтом.\n\0");
+                        break;
+                    case 2:
+                        strcpy(descriptionTime, "Ночное светило восходит на небо.\n\0");
+                }
+            }
+
+        } else if ((WorldTime <= DayTimeCycleParadarium[2] && WorldTime > DayTimeCycleParadarium[1]) ||
+                   (WorldTime <= DayTimeCycleParadarium[6] && WorldTime > DayTimeCycleParadarium[5])) {
+            choice = randChoice(3);
+            switch (choice) {
+                case 1:
+                    strcpy(descriptionTime, "Вокруг кромешная тьма.\n\0");
+                    break;
+                case 2:
+                    strcpy(descriptionTime, "Тёмная ночь.\n\0");
+                    break;
+                case 3:
+                    strcpy(descriptionTime, "В непроглядной темноте мало что видно.\n\0");
+            }
+
+        } else if ((WorldTime <= DayTimeCycleParadarium[3] && WorldTime > DayTimeCycleParadarium[2]) ||
+                   (WorldTime <= DayTimeCycleParadarium[5] && WorldTime > DayTimeCycleParadarium[4])) {
             strcpy(copyLine, "$E0\\__/$70");
             copyLine[8] = locationColor[1]; copyLine[9] = locationColor[2];
             replaceInColorizedString(locationAppearance[3], copyLine, 29);
@@ -630,7 +673,29 @@ void displayLocation(char** locInf, char worldId[]) {
             copyLine[14] = locationColor[1]; copyLine[15] = locationColor[2];
             replaceInColorizedString(locationAppearance[4], copyLine, 32);
 
-            strcpy(descriptionTime, "Яркая утренняя заря.\n\0");
+            if (WorldTime > DayTimeCycleParadarium[4]) {
+                choice = randChoice(3);
+                switch (choice) {
+                    case 1:
+                        strcpy(descriptionTime, "Яркая утренняя заря.\n\0");
+                        break;
+                    case 2:
+                        strcpy(descriptionTime, "Солнце выходит из-за горизонта.\n\0");
+                        break;
+                    case 3:
+                        strcpy(descriptionTime, "Всё вокруг тает в ярких лучах звезды.\n\0");
+                }
+            } else {
+                choice = randChoice(2);
+                switch (choice) {
+                    case 1:
+                        strcpy(descriptionTime, "Светило стремится скрыться за горизонтом.\n\0");
+                        break;
+                    case 2:
+                        strcpy(descriptionTime, "Из-за заката доносятся последние вечерние лучи солнца.\n\0");
+                }
+            }
+
         } else if (WorldTime <= DayTimeCycleParadarium[4] && WorldTime > DayTimeCycleParadarium[3]) {
             strcpy(copyLine, "$E0\\__/$70");
             copyLine[8] = locationColor[1]; copyLine[9] = locationColor[2];
@@ -643,6 +708,15 @@ void displayLocation(char** locInf, char worldId[]) {
             strcpy(copyLine, "$E0/¯¯\\$70");
             copyLine[10] = locationColor[1]; copyLine[11] = locationColor[2];
             replaceInColorizedString(locationAppearance[2], copyLine, 26, 2);
+
+            choice = randChoice(3);
+            switch (choice) {
+                case 2:
+                    strcpy(descriptionTime, "Светило ярко освещает всё вокруг.\n\0");
+                    break;
+                case 3:
+                    strcpy(descriptionTime, "Солнце высоко в небе.\n\0");
+            }
         }
     }
 
@@ -674,12 +748,6 @@ int main() {
     SetWindowPos(hwConsole, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE| SWP_SHOWWINDOW);
 
     ChangeColorSet(1);
-
-    random_device rand;
-    mt19937 randGen(rand());
-    uniform_int_distribution<> randSelectTwo(1, 2);
-    uniform_int_distribution<> randSelectThree(1, 3);
-    uniform_int_distribution<> randSelectHundred(1, 100);
 
     WorldTime = 8;
 

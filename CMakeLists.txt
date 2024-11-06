@@ -13,5 +13,7 @@ add_executable(untitled main.cpp
         arrayProcedures.cpp
         arrayProcedures.h
         displayProcedures.cpp
-        displayProcedures.h)
+        displayProcedures.h
+        randomProcedures.cpp
+        randomProcedures.h)
 target_link_libraries(untitled OpenXLSX::OpenXLSX)
