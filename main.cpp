@@ -17,7 +17,7 @@ HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NUL
 char** LocationInfo = new char*[0];
 unsigned short LocationInfoSize = 0;
 char* World = new char[11] {"Paradarium"};
-char* Location = new char[5] {"CL25"};
+char* Location = new char[5] {"BQ16"};
 
 short WorldDate;
 short WorldTime;
@@ -533,7 +533,7 @@ void displayInventory() {
     } while (number != 1 || !enterPressed);
 }
 
-void displayLocation(char** locInf, char worldId[]) {
+void displayLocation(char** locInf, unsigned short &locInfSize, char worldId[]) {
     const short locSizeY = 7;
     const short locSizeX = 100;
 
@@ -551,7 +551,7 @@ void displayLocation(char** locInf, char worldId[]) {
     system("cls");
 
     if (isSameStrings(worldId, "Paradarium")) {
-        if (isIn(locInf, LocationInfoSize, "P", 1)) {
+        if (isIn(locInf, locInfSize, "P", 1)) {
             locationColor[1] = '2'; locationColor[2] = '0';
 
             // Plains basic appearance
@@ -566,7 +566,7 @@ void displayLocation(char** locInf, char worldId[]) {
             strcpy(description, "Вы находитесь в равнинах. Мелкая зелёная травка колышется на ветру.\n\0");
 
             // if it has river
-            if (isIn(locInf, LocationInfoSize, "RV", 2)) {
+            if (isIn(locInf, locInfSize, "RV", 2)) {
                 strcpy(copyLine, " $30/$F3 ~ ~ ~ ~ ~ $30\\$20          \\|/\0");
                 for (short i = 28; i < 69; i++) {
                     locationAppearance[5][i] = copyLine[i - 28];
@@ -581,7 +581,7 @@ void displayLocation(char** locInf, char worldId[]) {
             }
 
             // if it has berry bush
-            if (isIn(locInf, LocationInfoSize, "BRB", 3)) {
+            if (isIn(locInf, locInfSize, "BRB", 3)) {
                 strcpy(copyLine, "$10______      \0");
                 for (short i = 47; i < 63; i++) {
                     locationAppearance[3][i] = copyLine[i - 47];
@@ -598,6 +598,14 @@ void displayLocation(char** locInf, char worldId[]) {
                 }
 
                 strcpy(descriptionSpecial, "Неподалёку вы видите ягодный куст.\n\0");
+            }
+
+            // if it has road
+            if (isIn(locInf, locInfSize, "RD", 2)) {
+                replaceInColorizedString(locationAppearance[5], " $60/#####\\$20", 28);
+                replaceInColorizedString(locationAppearance[6], "$60/#######\\$20", 28);
+
+                strcpy(descriptionSpecial, "Мимо проходит дорога.\n\0");
             }
         }
 
@@ -711,8 +719,11 @@ void displayLocation(char** locInf, char worldId[]) {
 
             choice = randChoice(3);
             switch (choice) {
+                case 1:
+                    strcpy(descriptionTime, "\0");
+                    break;
                 case 2:
-                    strcpy(descriptionTime, "Светило ярко освещает всё вокруг.\n\0");
+                    strcpy(descriptionTime, "Светило ярко озаряет всё вокруг.\n\0");
                     break;
                 case 3:
                     strcpy(descriptionTime, "Солнце высоко в небе.\n\0");
@@ -752,7 +763,7 @@ int main() {
     WorldTime = 8;
 
     LocationInfo = LoadLocationInfo(Location, World);
-    displayLocation(LocationInfo, World);
+    displayLocation(LocationInfo, LocationInfoSize, World);
 
     for (short i = 0; i < LocationInfoSize; i++) {
         delete[] LocationInfo[i];
